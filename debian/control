@@ -16,6 +16,7 @@ Build-Depends: debhelper-compat (= 13),
                golang-golang-x-tools-dev,
                golang-k8s-sigs-yaml-dev,
                golang-golang-x-text-dev,
+               golang-github-swaggo-files,
                git
 Standards-Version: 4.6.0
 Vcs-Browser: https://salsa.debian.org/go-team/packages/golang-github-swaggo-swag
@@ -36,6 +37,7 @@ Depends: golang-github-gin-gonic-gin-dev,
          golang-golang-x-tools-dev,
          golang-k8s-sigs-yaml-dev,
          golang-golang-x-text-dev,
+         golang-github-swaggo-files,
          ${misc:Depends}
 Description: Automatically generate RESTful API documentation with Swagger 2.0 for Go. (library)
  swag
