@@ -1,4 +1,4 @@
-golang-github-swaggo-swag (1.16.3-8) UNRELEASED; urgency=medium
+golang-github-swaggo-swag (1.16.3-9) UNRELEASED; urgency=medium
 
   * Initial release (Closes: TODO)
   * fix dependency
@@ -9,5 +9,6 @@ golang-github-swaggo-swag (1.16.3-8) UNRELEASED; urgency=medium
   * fi xmolior yml
   * disable tests
   * add dependency
+  * add dependeny
 
- -- lynx <neolynx@gmail.com>  Tue, 01 Oct 2024 16:51:07 +0200
+ -- lynx <neolynx@gmail.com>  Tue, 01 Oct 2024 16:59:54 +0200
