@@ -1,0 +1,2423 @@
+Source: golang-github-swaggo-swag
+Maintainer: Debian Go Packaging Team <team+pkg-go@tracker.debian.org>
+Uploaders: lynx <TODO>
+Section: golang
+Testsuite: autopkgtest-pkg-go
+Priority: optional
+Build-Depends: debhelper-compat (= 13),
+               dh-golang,
+               golang-any,
+               golang-github-gin-gonic-gin-dev,
+               golang-github-go-openapi-spec-dev,
+               golang-github-gofrs-uuid-dev,
+               golang-github-gorilla-mux-dev,
+               golang-github-stretchr-testify-dev,
+               golang-github-urfave-cli-dev,
+               golang-golang-x-tools-dev,
+               golang-k8s-sigs-yaml-dev,
+               golang-x-text-dev,
+               git
+Standards-Version: 4.6.0
+Vcs-Browser: https://salsa.debian.org/go-team/packages/golang-github-swaggo-swag
+Vcs-Git: https://salsa.debian.org/go-team/packages/golang-github-swaggo-swag.git
+Homepage: https://github.com/swaggo/swag
+Rules-Requires-Root: no
+XS-Go-Import-Path: github.com/swaggo/swag
+
+Package: golang-github-swaggo-swag-dev
+Architecture: all
+Multi-Arch: foreign
+Depends: golang-github-gin-gonic-gin-dev,
+         golang-github-go-openapi-spec-dev,
+         golang-github-gofrs-uuid-dev,
+         golang-github-gorilla-mux-dev,
+         golang-github-stretchr-testify-dev,
+         golang-github-urfave-cli-dev,
+         golang-golang-x-tools-dev,
+         golang-k8s-sigs-yaml-dev,
+         golang-x-text-dev,
+         ${misc:Depends}
+Description: Automatically generate RESTful API documentation with Swagger 2.0 for Go. (library)
+ swag
+ .
+ 🌍 *English ∙ 简体中文 ∙ Português*
+ .
+ .
+ Build Status (https://github.com/features/actions) Coverage Status
+ (https://codecov.io/gh/swaggo/swag) Go Report Card
+ (https://goreportcard.com/report/github.com/swaggo/swag) codebeat badge
+ (https://codebeat.co/projects/github-com-swaggo-swag-master) Go Doc
+ (https://godoc.org/github.com/swaggo/swag) Backers on Open Collective
+ Sponsors on Open Collective FOSSA Status
+ (https://app.fossa.io/projects/git%2Bgithub.com%2Fswaggo%2Fswag?ref=badge_shield)
+ Release (https://github.com/swaggo/swag/releases)
+ .
+ Swag converts Go annotations to Swagger Documentation 2.0. We've created
+ a variety of plugins for popular Go web frameworks. This allows you to
+ quickly integrate with an existing Go project (using Swagger UI).
+ .
+ Contents
+ .
+  * Getting started
+  * Supported Web Frameworks
+  * How to use it with Gin
+  * The swag formatter
+  * Implementation Status
+  * Declarative Comments Format
+        * General API Info
+        * API Operation
+        * Security
+  * Examples
+        * Descriptions over multiple lines
+        * User defined structure with an array type
+        * Function scoped struct declaration
+        * Model composition in response
+        * Add a headers in response
+        * Use multiple path params
+        * Example value of struct
+        * SchemaExample of body
+        * Description of struct
+        * Use swaggertype tag to supported custom type
+        * Use global overrides to support a custom type
+        * Use swaggerignore tag to exclude a field
+        * Add extension info to struct field
+        * Rename model to display
+        * How to use security annotations
+        * Add a description for enum items
+        * Generate only specific docs file types
+        * How to use Go generic types
+  * About the Project
+ .
+ Getting started
+ .
+  1. Add comments to your API source code, See Declarative Comments
+     Format.
+  2. Install swag by using:
+ .
+   go install github.com/swaggo/swag/cmd/swag@latest
+ .
+ To build from source you need Go (https://golang.org/dl/) (1.19 or
+ newer).
+ .
+ Alternatively you can run the docker image:
+ .
+   docker run --rm -v $(pwd):/code ghcr.io/swaggo/swag:latest
+ .
+ Or download a pre-compiled binary from the release page
+ (https://github.com/swaggo/swag/releases).
+ .
+  3. Run swag init in the project's root folder which contains the
+     main.go file. This will parse your comments and generate the required
+     files (docs folder and docs/docs.go).
+ .
+   swag init
+ .
+ Make sure to import the generated docs/docs.go so that your specific
+ configuration gets init'ed. If your General API annotations do not live
+ in main.go, you can let swag know with -g flag.
+ .
+   import _ "example-module-name/docs"
+ .
+   swag init -g http/api.go
+ .
+  4. (optional) Use swag fmt format the SWAG comment. (Please upgrade to
+     the latest version)
+ .
+   swag fmt
+ .
+ swag cli
+ .
+   swag init -h
+   NAME:
+      swag init - Create docs.go
+ .
+   USAGE:
+      swag init [command options] [arguments...]
+ .
+   OPTIONS:
+      --quiet, -q                            Make the logger quiet.
+ (default: false)
+      --generalInfo value, -g value          Go file path in which 'swagger
+ general API Info' is written (default: "main.go")
+      --dir value, -d value                  Directories you want to
+ parse,comma separated and general-info file must be in the first one
+ (default: "./")
+      --exclude value                        Exclude directories and files
+ when searching, comma separated
+      --propertyStrategy value, -p value     Property Naming Strategy like
+ snakecase,camelcase,pascalcase (default: "camelcase")
+      --output value, -o value               Output directory for all the
+ generated files(swagger.json, swagger.yaml and docs.go) (default:
+ "./docs")
+      --outputTypes value, --ot value        Output types of generated files
+ (docs.go, swagger.json, swagger.yaml) like go,json,yaml (default:
+ "go,json,yaml")
+      --parseVendor                          Parse go files in 'vendor'
+ folder, disabled by default (default: false)
+      --parseDependency, --pd                Parse go files inside dependency
+ folder, disabled by default (default: false)
+      --markdownFiles value, --md value      Parse folder containing markdown
+ files to use as description, disabled by default
+      --codeExampleFiles value, --cef value  Parse folder containing code
+ example files to use for the x-codeSamples extension, disabled by default
+      --parseInternal                        Parse go files in internal
+ packages, disabled by default (default: false)
+      --generatedTime                        Generate timestamp at the top
+ of docs.go, disabled by default (default: false)
+      --parseDepth value                     Dependency parse depth
+ (default: 100)
+      --requiredByDefault                    Set validation required for
+ all fields by default (default: false)
+      --instanceName value                   This parameter can be used to
+ name different swagger document instances. It is optional.
+      --overridesFile value                  File to read global type
+ overrides from. (default: ".swaggo")
+      --parseGoList                          Parse dependency via 'go list'
+ (default: true)
+      --tags value, -t value                 A comma-separated list of tags
+ to filter the APIs for which the documentation is generated.Special case
+ if the tag is prefixed with the '!' character then the APIs with that
+ tag will be excluded
+      --templateDelims value, --td value     Provide custom delimiters for Go
+ template generation. The format is leftDelim,rightDelim. For example:
+ "[[,]]"
+      --collectionFormat value, --cf value   Set default collection format
+ (default: "csv")
+      --state value                          Initial state for the state
+ machine (default: ""), @HostState in root file, @State in other files
+      --parseFuncBody                        Parse API info within body of
+ functions in go files, disabled by default (default: false)
+      --help, -h                             show help (default: false)
+ .
+   swag fmt -h
+   NAME:
+      swag fmt - format swag comments
+ .
+   USAGE:
+      swag fmt [command options] [arguments...]
+ .
+   OPTIONS:
+      --dir value, -d value          Directories you want to parse,comma
+ separated and general-info file must be in the first one (default: "./")
+      --exclude value                Exclude directories and files when
+ searching, comma separated
+      --generalInfo value, -g value  Go file path in which 'swagger general
+ API Info' is written (default: "main.go")
+      --help, -h                     show help (default: false)
+ .
+ .
+ Supported Web Frameworks
+ .
+  * gin (http://github.com/swaggo/gin-swagger)
+  * echo (http://github.com/swaggo/echo-swagger)
+  * buffalo (https://github.com/swaggo/buffalo-swagger)
+  * net/http (https://github.com/swaggo/http-swagger)
+  * gorilla/mux (https://github.com/swaggo/http-swagger)
+  * go-chi/chi (https://github.com/swaggo/http-swagger)
+  * flamingo (https://github.com/i-love-flamingo/swagger)
+  * fiber (https://github.com/gofiber/swagger)
+  * atreugo (https://github.com/Nerzal/atreugo-swagger)
+  * hertz (https://github.com/hertz-contrib/swagger)
+ .
+ How to use it with Gin
+ .
+ Find the example source code here
+ (https://github.com/swaggo/swag/tree/master/example/celler).
+ .
+ Finish the steps in Getting started
+ .
+  1. After using swag init to generate Swagger 2.0 docs, import the
+     following packages:
+ .
+   import "github.com/swaggo/gin-swagger" // gin-swagger middleware
+   import "github.com/swaggo/files" // swagger embed files
+ .
+  2. Add General API annotations in main.go code:
+ .
+   // @title           Swagger Example API
+   // @version         1.0
+   // @description     This is a sample server celler server.
+   // @termsOfService  http://swagger.io/terms/
+ .
+   // @contact.name   API Support
+   // @contact.url    http://www.swagger.io/support
+   // @contact.email  support@swagger.io
+ .
+   // @license.name  Apache 2.0
+   // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+ .
+   // @host      localhost:8080
+   // @BasePath  /api/v1
+ .
+   // @securityDefinitions.basic  BasicAuth
+ .
+   // @externalDocs.description  OpenAPI
+   // @externalDocs.url          https://swagger.io/resources/open-api/
+   func main() {
+   	r := gin.Default()
+ .
+   	c := controller.NewController()
+ .
+   	v1 := r.Group("/api/v1")
+   	{
+   		accounts := v1.Group("/accounts")
+   		{
+   			accounts.GET(":id", c.ShowAccount)
+   			accounts.GET("", c.ListAccounts)
+   			accounts.POST("", c.AddAccount)
+   			accounts.DELETE(":id", c.DeleteAccount)
+   			accounts.PATCH(":id", c.UpdateAccount)
+   			accounts.POST(":id/images", c.UploadAccountImage)
+   		}
+       //...
+   	}
+   	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+   	r.Run(":8080")
+   }
+   //...
+ .
+ Additionally some general API info can be set dynamically. The generated
+ code package docs exports SwaggerInfo variable which we can use to set
+ the title, description, version, host and base path programmatically.
+ Example using Gin:
+ .
+   package main
+ .
+   import (
+   	"github.com/gin-gonic/gin"
+   	"github.com/swaggo/files"
+   	"github.com/swaggo/gin-swagger"
+ .
+   	"./docs" // docs is generated by Swag CLI, you have to import it.
+   )
+ .
+   // @contact.name   API Support
+   // @contact.url    http://www.swagger.io/support
+   // @contact.email  support@swagger.io
+ .
+   // @license.name  Apache 2.0
+   // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+   func main() {
+ .
+   	// programmatically set swagger info
+   	docs.SwaggerInfo.Title = "Swagger Example API"
+   	docs.SwaggerInfo.Description = "This is a sample server Petstore
+ server."
+   	docs.SwaggerInfo.Version = "1.0"
+   	docs.SwaggerInfo.Host = "petstore.swagger.io"
+   	docs.SwaggerInfo.BasePath = "/v2"
+   	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+ .
+   	r := gin.New()
+ .
+   	// use ginSwagger middleware to serve the API docs
+   	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+ .
+   	r.Run()
+   }
+ .
+  3. Add API Operation annotations in controller code
+ .
+   package controller
+ .
+   import (
+       "fmt"
+       "net/http"
+       "strconv"
+ .
+       "github.com/gin-gonic/gin"
+       "github.com/swaggo/swag/example/celler/httputil"
+       "github.com/swaggo/swag/example/celler/model"
+   )
+ .
+   // ShowAccount godoc
+   // @Summary      Show an account
+   // @Description  get string by ID
+   // @Tags         accounts
+   // @Accept       json
+   // @Produce      json
+   // @Param        id   path      int  true  "Account ID"
+   // @Success      200  {object}  model.Account
+   // @Failure      400  {object}  httputil.HTTPError
+   // @Failure      404  {object}  httputil.HTTPError
+   // @Failure      500  {object}  httputil.HTTPError
+   // @Router       /accounts/{id} [get]
+   func (c *Controller) ShowAccount(ctx *gin.Context) {
+     id := ctx.Param("id")
+     aid, err := strconv.Atoi(id)
+     if err != nil {
+       httputil.NewError(ctx, http.StatusBadRequest, err)
+       return
+     }
+     account, err := model.AccountOne(aid)
+     if err != nil {
+       httputil.NewError(ctx, http.StatusNotFound, err)
+       return
+     }
+     ctx.JSON(http.StatusOK, account)
+   }
+ .
+   // ListAccounts godoc
+   // @Summary      List accounts
+   // @Description  get accounts
+   // @Tags         accounts
+   // @Accept       json
+   // @Produce      json
+   // @Param        q    query     string  false  "name search by q"
+ Format(email)
+   // @Success      200  {array}   model.Account
+   // @Failure      400  {object}  httputil.HTTPError
+   // @Failure      404  {object}  httputil.HTTPError
+   // @Failure      500  {object}  httputil.HTTPError
+   // @Router       /accounts [get]
+   func (c *Controller) ListAccounts(ctx *gin.Context) {
+     q := ctx.Request.URL.Query().Get("q")
+     accounts, err := model.AccountsAll(q)
+     if err != nil {
+       httputil.NewError(ctx, http.StatusNotFound, err)
+       return
+     }
+     ctx.JSON(http.StatusOK, accounts)
+   }
+   //...
+ .
+   swag init
+ .
+  4. Run your app, and browse to
+     http://localhost:8080/swagger/index.html. You will see Swagger 2.0 Api
+     documents as shown below:
+ .
+ [Image: swagger_index.html]
+ (https://raw.githubusercontent.com/swaggo/swag/master/assets/swagger-
+ image.png)
+ .
+ The swag formatter
+ .
+ The Swag Comments can be automatically formatted, just like 'go fmt'.
+ Find the result of formatting here
+ (https://github.com/swaggo/swag/tree/master/example/celler).
+ .
+ Usage:
+ .
+   swag fmt
+ .
+ Exclude folder：
+ .
+   swag fmt -d ./ --exclude ./internal
+ .
+ When using swag fmt, you need to ensure that you have a doc comment for
+ the function to ensure correct formatting. This is due to swag fmt
+ indenting swag comments with tabs, which is only allowed *after* a
+ standard doc comment.
+ .
+ For example, use
+ .
+   // ListAccounts lists all existing accounts
+   //
+   //  @Summary      List accounts
+   //  @Description  get accounts
+   //  @Tags         accounts
+   //  @Accept       json
+   //  @Produce      json
+   //  @Param        q    query     string  false  "name search by q"
+ Format(email)
+   //  @Success      200  {array}   model.Account
+   //  @Failure      400  {object}  httputil.HTTPError
+   //  @Failure      404  {object}  httputil.HTTPError
+   //  @Failure      500  {object}  httputil.HTTPError
+   //  @Router       /accounts [get]
+   func (c *Controller) ListAccounts(ctx *gin.Context) {
+ .
+ Implementation Status
+ .
+ Swagger 2.0 document (https://swagger.io/docs/specification/2-0/basic-
+ structure/)
+ .
+  [x] Basic Structure
+  [x] API Host and Base Path
+  [x] Paths and Operations
+  [x] Describing Parameters
+  [x] Describing Request Body
+  [x] Describing Responses
+  [x] MIME Types
+  [x] Authentication
+      [x] Basic Authentication
+      [x] API Keys
+  [x] Adding Examples
+  [x] File Upload
+  [x] Enums
+  [x] Grouping Operations With Tags
+  [ ] Swagger Extensions
+ .
+ Declarative Comments Format
+ .
+ General API Info
+ .
+ **Example** celler/main.go
+ (https://github.com/swaggo/swag/blob/master/example/celler/main.go)
+ .
+          ANNOTATION        |             DESCRIPTION              |
+ EXAMPLE
+ ---------------------------+--------------------------------------+---------------------------------
+   title                    | Required. The title of the           | //
+ @title Swagger Example API
+                            | application.                         |
+   version                  | Required. Provides the version       | //
+ @version 1.0
+                            | of the application API.              |
+   description              | A short description of the           | //
+ @description This is a
+                            | application.                         |
+ sample server celler server.
+   tag.name                 | Name of a tag.                       | //
+ @tag.name This is the name
+                            |                                      | of
+ the tag
+   tag.description          | Description of the tag               | //
+ @tag.description Cool
+                            |                                      |
+ Description
+   tag.docs.url             | Url of the external                  | //
+ @tag.docs.url
+                            | Documentation of the tag             |
+   tag.docs.description     | Description of the external          | //
+ @tag.docs.description Best
+                            | Documentation of the tag             |
+ example documentation
+   termsOfService           | The Terms of Service for the         | //
+ @termsOfService
+                            | API.                                 |
+   contact.name             | The contact information for          | //
+ @contact.name API Support
+                            | the exposed API.                     |
+   contact.url              | The URL pointing to the              | //
+ @contact.url
+                            | contact information. MUST be         |
+                            | in the format of a URL.              |
+   contact.email            | The email address of the             | //
+ @contact.email
+                            | contact person/organization.         |
+                            | MUST be in the format of an          |
+                            | email address.                       |
+   license.name             | Required. The license name           | //
+ @license.name Apache 2.0
+                            | used for the API.                    |
+   license.url              | A URL to the license used for        | //
+ @license.url
+                            | the API. MUST be in the format       |
+                            | of a URL.                            |
+   host                     | The host (name or ip) serving        | //
+ @host localhost:8080
+                            | the API.                             |
+   BasePath                 | The base path on which the API       | //
+ @BasePath /api/v1
+                            | is served.                           |
+   accept                   | A list of MIME types the APIs        | //
+ @accept json
+                            | can consume. Note that Accept        |
+                            | only affects operations with         |
+                            | a request body, such as POST,        |
+                            | PUT and PATCH.  Value MUST be        |
+                            | as described under Mime Types.       |
+   produce                  | A list of MIME types the APIs        | //
+ @produce json
+                            | can produce. Value MUST be as        |
+                            | described under Mime Types.          |
+   query.collection.format  | The default collection(array)        | //
+ @query.collection.format
+                            | param format in                      |
+ multi
+                            | query,enums:csv,multi,pipes,tsv,ssv. |
+                            | If not set, csv is the default.      |
+   schemes                  | The transfer protocol for the        | //
+ @schemes http https
+                            | operation that separated by          |
+                            | spaces.                              |
+   externalDocs.description | Description of the external          | //
+ @externalDocs.description
+                            | document.                            |
+ OpenAPI
+   externalDocs.url         | URL of the external document.        | //
+ @externalDocs.url
+   x-name                   | The extension key, must be           | // @x-
+ example-key {"key":
+                            | start by x- and take only json       |
+ "value"}
+                            | value                                |
+ .
+ Using markdown descriptions
+ .
+ When a short string in your documentation is insufficient, or you need
+ images, code examples and things like that you may want to use markdown
+ descriptions. In order to use markdown descriptions use the following
+ annotations.
+ .
+          ANNOTATION        |          DESCRIPTION           |
+ EXAMPLE
+ ---------------------------+--------------------------------+---------------------------------
+   title                    | Required. The title of the     | // @title
+ Swagger Example API
+                            | application.                   |
+   version                  | Required. Provides the version | //
+ @version 1.0
+                            | of the application API.        |
+   description.markdown     | A short description of the     | //
+ @description.markdown No
+                            | application. Parsed from       | value
+ needed, this parses the
+                            | the api.md file. This is an    |
+ description from api.md
+                            | alternative to @description    |
+   tag.name                 | Name of a tag.                 | //
+ @tag.name This is the name
+                            |                                | of the tag
+   tag.description.markdown | Description of the tag         | //
+ @tag.description.markdown
+                            | this is an alternative         |
+                            | to tag.description. The        |
+                            | description will be read from  |
+                            | a file named like tagname.md   |
+ .
+ API Operation
+ .
+ **Example** celler/controller
+ (https://github.com/swaggo/swag/tree/master/example/celler/controller)
+ .
+        ANNOTATION      |          DESCRIPTION
+ -----------------------+---------------------------------
+   description          | A verbose explanation of the
+                        | operation behavior.
+   description.markdown | A short description of the
+                        | application. The description
+                        | will be read from a file.
+                        | E.g. @description.markdown
+                        | details will load details.md
+   id                   | A unique string used to
+                        | identify the operation.
+                        | Must be unique among all API
+                        | operations.
+   tags                 | A list of tags to each API
+                        | operation that separated by
+                        | commas.
+   summary              | A short summary of what the
+                        | operation does.
+   accept               | A list of MIME types the APIs
+                        | can consume. Note that Accept
+                        | only affects operations with
+                        | a request body, such as POST,
+                        | PUT and PATCH.  Value MUST be
+                        | as described under Mime Types.
+   produce              | A list of MIME types the APIs
+                        | can produce. Value MUST be as
+                        | described under Mime Types.
+   param                | Parameters that separated
+                        | by spaces. param
+                        | name,param type,data
+                        | type,is mandatory?,comment
+                        | attribute(optional)
+   security             | Security to each API
+                        | operation.
+   success              | Success response that
+                        | separated by spaces. return
+                        | code or default,{param
+                        | type},data type,comment
+   failure              | Failure response that
+                        | separated by spaces. return
+                        | code or default,{param
+                        | type},data type,comment
+   response             | As same as success and failure
+   header               | Header in response that
+                        | separated by spaces. return
+                        | code,{param type},data
+                        | type,comment
+   router               | Path definition that separated
+                        | by spaces. path,[httpMethod]
+   deprecatedrouter     | As same as router, but
+                        | deprecated.
+   x-name               | The extension key, must be
+                        | start by x- and take only json
+                        | value.
+   x-codeSample         | Optional Markdown usage. take
+                        | file as parameter. This will
+                        | then search for a file named
+                        | like the summary in the given
+                        | folder.
+   deprecated           | Mark endpoint as deprecated.
+ .
+ Mime Types
+ .
+ swag accepts all MIME Types which are in the correct format, that is,
+ match */*. Besides that, swag also accepts aliases for some MIME Types
+ as follows:
+ .
+           ALIAS         |             MIME TYPE
+ ------------------------+------------------------------------
+   json                  | application/json
+   xml                   | text/xml
+   plain                 | text/plain
+   html                  | text/html
+   mpfd                  | multipart/form-data
+   x-www-form-urlencoded | application/x-www-form-urlencoded
+   json-api              | application/vnd.api+json
+   json-stream           | application/x-json-stream
+   octet-stream          | application/octet-stream
+   png                   | image/png
+   jpeg                  | image/jpeg
+   gif                   | image/gif
+ .
+ Param Type
+ .
+  * query
+  * path
+  * header
+  * body
+  * formData
+ .
+ Data Type
+ .
+  * string (string)
+  * integer (int, uint, uint32, uint64)
+  * number (float32)
+  * boolean (bool)
+  * file (param data type when uploading)
+  * user defined struct
+ .
+ Security
+ .
+                 ANNOTATION               |       DESCRIPTION        |
+ PARAMETERS           |                 EXAMPLE
+ -----------------------------------------+--------------------------+--------------------------------+------------------------------------------
+   securitydefinitions.basic              | Basic auth.              |
+ | // @securityDefinitions.basic
+                                          |                          |
+ | BasicAuth
+   securitydefinitions.apikey             | API key auth.            |
+ in, name, description          | // @securityDefinitions.apikey
+                                          |                          |
+ | ApiKeyAuth
+   securitydefinitions.oauth2.application | OAuth2 application auth. |
+ tokenUrl, scope, description   | //
+                                          |                          |
+ | @securitydefinitions.oauth2.application
+                                          |                          |
+ | OAuth2Application
+   securitydefinitions.oauth2.implicit    | OAuth2 implicit auth.    |
+ authorizationUrl, scope,       | //
+                                          |                          |
+ description                    | @securitydefinitions.oauth2.implicit
+                                          |                          |
+ | OAuth2Implicit
+   securitydefinitions.oauth2.password    | OAuth2 password auth.    |
+ tokenUrl, scope, description   | //
+                                          |                          |
+ | @securitydefinitions.oauth2.password
+                                          |                          |
+ | OAuth2Password
+   securitydefinitions.oauth2.accessCode  | OAuth2 access code auth. |
+ tokenUrl, authorizationUrl,    | //
+                                          |                          |
+ scope, description             | @securitydefinitions.oauth2.accessCode
+                                          |                          |
+ | OAuth2AccessCode
+ .
+   PARAMETERS ANNOTATION |            EXAMPLE
+ ------------------------+---------------------------------
+   in                    | // @in header
+   name                  | // @name Authorization
+   tokenUrl              | // @tokenUrl
+   authorizationurl      | // @authorizationurl
+   scope.hoge            | // @scope.write Grants write
+                         | access
+   description           | // @description OAuth protects
+                         | our entity endpoints
+ .
+ Attribute
+ .
+   // @Param   enumstring  query     string     false  "string enums"
+ Enums(A, B, C)
+   // @Param   enumint     query     int        false  "int enums"
+ Enums(1, 2, 3)
+   // @Param   enumnumber  query     number     false  "int enums"
+ Enums(1.1, 1.2, 1.3)
+   // @Param   string      query     string     false  "string valid"
+ minlength(5)  maxlength(10)
+   // @Param   int         query     int        false  "int valid"
+ minimum(1)    maximum(10)
+   // @Param   default     query     string     false  "string default"
+ default(A)
+   // @Param   example     query     string     false  "string example"
+ example(string)
+   // @Param   collection  query     []string   false  "string
+ collection"  collectionFormat(multi)
+   // @Param   extensions  query     []string   false  "string
+ collection"  extensions(x-example=test,x-nullable)
+ .
+ It also works for the struct fields:
+ .
+   type Foo struct {
+       Bar string `minLength:"4" maxLength:"16" example:"random string"`
+       Baz int `minimum:"10" maximum:"20" default:"15"`
+       Qux []string `enums:"foo,bar,baz"`
+   }
+ .
+ Available
+ .
+      FIELD NAME    |  TYPE   |          DESCRIPTION
+ -------------------+---------+---------------------------------
+   validate         | string  | Determines the validation for
+                    |         | the parameter. Possible values
+                    |         | are: required,optional.
+   default          | *       | Declares the value of the
+                    |         | parameter that the server will
+                    |         | use if none is provided, for
+                    |         | example a "count" to control
+                    |         | the number of results per
+                    |         | page might default to 100 if
+                    |         | not supplied by the client in
+                    |         | the request. (Note: "default"
+                    |         | has no meaning for required
+                    |         | parameters.)  See . Unlike
+                    |         | JSON Schema this value MUST
+                    |         | conform to the defined type
+                    |         | for this parameter.
+   maximum          | number  | See .
+   minimum          | number  | See .
+   multipleOf       | number  | See .
+   maxLength        | integer | See .
+   minLength        | integer | See .
+   enums            | [\*]    | See .
+   format           | string  | The extending format for the
+                    |         | previously mentioned type. See
+                    |         | Data Type Formats for further
+                    |         | details.
+   collectionFormat | string  | Determines the format of
+                    |         | the array if type array is
+                    |         | used. Possible values are:
+                    |         | csv - comma separated values
+                    |         | foo,bar. ssv - space separated
+                    |         | values foo bar. tsv - tab
+                    |         | separated values foo\tbar.
+                    |         | pipes - pipe separated
+                    |         | values foo&#124;bar. multi
+                    |         | - corresponds to multiple
+                    |         | parameter instances instead of
+                    |         | multiple values for a single
+                    |         | instance foo=bar&foo=baz. This
+                    |         | is valid only for parameters
+                    |         | in "query" or "formData".
+                    |         | Default value is csv.
+   example          | *       | Declares the example for the
+                    |         | parameter value
+   extensions       | string  | Add extension to parameters.
+ .
+ Future
+ .
+   FIELD NAME  |  TYPE   | DESCRIPTION
+ --------------+---------+--------------
+   pattern     | string  | See .
+   maxItems    | integer | See .
+   minItems    | integer | See .
+   uniqueItems | boolean | See .
+ .
+ Examples
+ .
+ Descriptions over multiple lines
+ .
+ You can add descriptions spanning multiple lines in either the general
+ api description or routes definitions like so:
+ .
+   // @description This is the first line
+   // @description This is the second line
+   // @description And so forth.
+ .
+ User defined structure with an array type
+ .
+   // @Success 200 {array} model.Account <-- This is a user defined struct.
+ .
+   package model
+ .
+   type Account struct {
+       ID   int    `json:"id" example:"1"`
+       Name string `json:"name" example:"account name"`
+   }
+ .
+ Function scoped struct declaration
+ .
+ You can declare your request response structs inside a function body.
+ You must have to follow the naming convention <package-name>.<function-
+ name>.<struct-name> .
+ .
+   package main
+ .
+   // @Param request body main.MyHandler.request true "query params"
+   // @Success 200 {object} main.MyHandler.response
+   // @Router /test [post]
+   func MyHandler() {
+   	type request struct {
+   		RequestField string
+   	}
+ .
+   	type response struct {
+   		ResponseField string
+   	}
+   }
+ .
+ Model composition in response
+ .
+   // JSONResult's data field will be overridden by the specific type
+ proto.Order
+   @success 200 {object} jsonresult.JSONResult{data=proto.Order} "desc"
+ .
+   type JSONResult struct {
+       Code    int          `json:"code" `
+       Message string       `json:"message"`
+       Data    interface{}  `json:"data"`
+   }
+ .
+   type Order struct { //in `proto` package
+       Id  uint            `json:"id"`
+       Data  interface{}   `json:"data"`
+   }
+ .
+  * also support array of objects and primitive types as nested response
+ .
+   @success 200 {object} jsonresult.JSONResult{data=[]proto.Order} "desc"
+   @success 200 {object} jsonresult.JSONResult{data=string} "desc"
+   @success 200 {object} jsonresult.JSONResult{data=[]string} "desc"
+ .
+  * overriding multiple fields. field will be added if not exists
+ .
+   @success 200 {object}
+ jsonresult.JSONResult{data1=string,data2=[]string,data3=proto.Order,data4=[]proto.Order}
+ "desc"
+ .
+  * overriding deep-level fields
+ .
+   type DeepObject struct { //in `proto` package
+   	...
+   }
+   @success 200 {object}
+ jsonresult.JSONResult{data1=proto.Order{data=proto.DeepObject},data2=[]proto.Order{data=[]proto.DeepObject}}
+ "desc"
+ .
+ Add a headers in response
+ .
+   // @Success      200              {string}  string    "ok"
+   // @failure      400              {string}  string    "error"
+   // @response     default          {string}  string    "other error"
+   // @Header       200              {string}  Location  "/entity/1"
+   // @Header       200,400,default  {string}  Token     "token"
+   // @Header       all              {string}  Token2    "token2"
+ .
+ Use multiple path params
+ .
+   /// ...
+   // @Param group_id   path int true "Group ID"
+   // @Param account_id path int true "Account ID"
+   // ...
+   // @Router /examples/groups/{group_id}/accounts/{account_id} [get]
+ .
+ Add multiple paths
+ .
+   /// ...
+   // @Param group_id path int true "Group ID"
+   // @Param user_id  path int true "User ID"
+   // ...
+   // @Router /examples/groups/{group_id}/user/{user_id}/address [put]
+   // @Router /examples/user/{user_id}/address [put]
+ .
+ Example value of struct
+ .
+   type Account struct {
+       ID   int    `json:"id" example:"1"`
+       Name string `json:"name" example:"account name"`
+       PhotoUrls []string `json:"photo_urls"
+ example:"http://test/image/1.jpg,http://test/image/2.jpg"`
+   }
+ .
+ SchemaExample of body
+ .
+   // @Param email body string true "message/rfc822"
+ SchemaExample(Subject: Testmail\r\n\r\nBody Message\r\n)
+ .
+ Description of struct
+ .
+   // Account model info
+   // @Description User account information
+   // @Description with user id and username
+   type Account struct {
+   	// ID this is userid
+   	ID   int    `json:"id"`
+   	Name string `json:"name"` // This is Name
+   }
+ .
+ #708 (https://github.com/swaggo/swag/issues/708) The parser handles only
+ struct comments starting with @Description attribute. But it writes all
+ struct field comments as is.
+ .
+ So, generated swagger doc as follows:
+ .
+   "Account": {
+     "type":"object",
+     "description": "User account information with user id and username"
+     "properties": {
+       "id": {
+         "type": "integer",
+         "description": "ID this is userid"
+       },
+       "name": {
+         "type":"string",
+         "description": "This is Name"
+       }
+     }
+   }
+ .
+ Use swaggertype tag to supported custom type
+ .
+ #201 (https://github.com/swaggo/swag/issues/201#issuecomment-475479409)
+ .
+   type TimestampTime struct {
+       time.Time
+   }
+ .
+   ///implement encoding.JSON.Marshaler interface
+   func (t *TimestampTime) MarshalJSON() ([]byte, error) {
+       bin := make([]byte, 16)
+       bin = strconv.AppendInt(bin[:0], t.Time.Unix(), 10)
+       return bin, nil
+   }
+ .
+   func (t *TimestampTime) UnmarshalJSON(bin []byte) error {
+       v, err := strconv.ParseInt(string(bin), 10, 64)
+       if err != nil {
+           return err
+       }
+       t.Time = time.Unix(v, 0)
+       return nil
+   }
+   ///
+ .
+   type Account struct {
+       // Override primitive type by simply specifying it via
+ `swaggertype` tag
+       ID     sql.NullInt64 `json:"id" swaggertype:"integer"`
+ .
+       // Override struct type to a primitive type 'integer' by
+ specifying it via `swaggertype` tag
+       RegisterTime TimestampTime `json:"register_time"
+ swaggertype:"primitive,integer"`
+ .
+       // Array types can be overridden using "array,<prim_type>" format
+       Coeffs []big.Float `json:"coeffs" swaggertype:"array,number"`
+   }
+ .
+ #379 (https://github.com/swaggo/swag/issues/379)
+ .
+   type CerticateKeyPair struct {
+   	Crt []byte `json:"crt" swaggertype:"string" format:"base64"
+ example:"U3dhZ2dlciByb2Nrcw=="`
+   	Key []byte `json:"key" swaggertype:"string" format:"base64"
+ example:"U3dhZ2dlciByb2Nrcw=="`
+   }
+ .
+ generated swagger doc as follows:
+ .
+   "api.MyBinding": {
+     "type":"object",
+     "properties":{
+       "crt":{
+         "type":"string",
+         "format":"base64",
+         "example":"U3dhZ2dlciByb2Nrcw=="
+       },
+       "key":{
+         "type":"string",
+         "format":"base64",
+         "example":"U3dhZ2dlciByb2Nrcw=="
+       }
+     }
+   }
+ .
+ .
+ Use global overrides to support a custom type
+ .
+ If you are using generated files, the swaggertype or swaggerignore tags
+ may not be possible.
+ .
+ By passing a mapping to swag with --overridesFile you can tell swag to use
+ one type in place of another wherever it appears. By default, if a
+ .swaggo file is present in the current directory it will be used.
+ .
+ Go code:
+ .
+   type MyStruct struct {
+     ID     sql.NullInt64 `json:"id"`
+     Name   sql.NullString `json:"name"`
+   }
+ .
+ .swaggo:
+ .
+   // Replace all NullInt64 with int
+   replace database/sql.NullInt64 int
+ .
+   // Don't include any fields of type database/sql.NullString in the
+ swagger docs
+   skip    database/sql.NullString
+ .
+ Possible directives are comments (beginning with //), replace
+ path/to/a.type path/to/b.type, and skip path/to/a.type.
+ .
+ (Note that the full paths to any named types must be provided to prevent
+ problems when multiple packages define a type with the same name)
+ .
+ Rendered:
+ .
+   "types.MyStruct": {
+     "id": "integer"
+   }
+ .
+ Use swaggerignore tag to exclude a field
+ .
+   type Account struct {
+       ID   string    `json:"id"`
+       Name string     `json:"name"`
+       Ignored int     `swaggerignore:"true"`
+   }
+ .
+ Add extension info to struct field
+ .
+   type Account struct {
+       ID   string    `json:"id"   extensions:"x-nullable,x-abc=def,!x-
+ omitempty"` // extensions fields must start with "x-"
+   }
+ .
+ generate swagger doc as follows:
+ .
+   "Account": {
+       "type": "object",
+       "properties": {
+           "id": {
+               "type": "string",
+               "x-nullable": true,
+               "x-abc": "def",
+               "x-omitempty": false
+           }
+       }
+   }
+ .
+ Rename model to display
+ .
+   type Resp struct {
+   	Code int
+   }//@name Response
+ .
+ How to use security annotations
+ .
+ General API info.
+ .
+   // @securityDefinitions.basic BasicAuth
+ .
+   // @securitydefinitions.oauth2.application OAuth2Application
+   // @tokenUrl https://example.com/oauth/token
+   // @scope.write Grants write access
+   // @scope.admin Grants read and write access to administrative
+ information
+ .
+ Each API operation.
+ .
+   // @Security ApiKeyAuth
+ .
+ Make it AND condition
+ .
+   // @Security ApiKeyAuth
+   // @Security OAuth2Application[write, admin]
+ .
+ Make it OR condition
+ .
+   // @Security ApiKeyAuth || firebase
+   // @Security OAuth2Application[write, admin] || APIKeyAuth
+ .
+ Add a description for enum items
+ .
+   type Example struct {
+   	// Sort order:
+   	// * asc - Ascending, from A to Z.
+   	// * desc - Descending, from Z to A.
+   	Order string `enums:"asc,desc"`
+   }
+ .
+ Generate only specific docs file types
+ .
+ By default swag command generates Swagger specification in three
+ different files/file types:
+ .
+  * docs.go
+  * swagger.json
+  * swagger.yaml
+ .
+ If you would like to limit a set of file types which should be generated
+ you can use --outputTypes (short -ot) flag. Default value is go,json,yaml -
+ output types separated with comma. To limit output only to go and yaml
+ files, you would write go,yaml. With complete command that would be swag
+ init --outputTypes go,yaml.
+ .
+ How to use Generics
+ .
+   // @Success 200 {object} web.GenericNestedResponse[types.Post]
+   // @Success 204 {object} web.GenericNestedResponse[types.Post,
+ Types.AnotherOne]
+   // @Success 201 {object}
+ web.GenericNestedResponse[web.GenericInnerType[types.Post]]
+   func GetPosts(w http.ResponseWriter, r *http.Request) {
+   	_ = web.GenericNestedResponse[types.Post]{}
+   }
+ .
+ See this file
+ (https://github.com/swaggo/swag/blob/master/testdata/generics_nested/api/api.go)
+ for more details and other examples.
+ .
+ Change the default Go Template action delimiters
+ .
+ #980 (https://github.com/swaggo/swag/issues/980) #1177
+ (https://github.com/swaggo/swag/issues/1177)
+ .
+ If your swagger annotations or struct fields contain "{{" or "}}", the
+ template generation will most likely fail, as these are the default
+ delimiters for go templates
+ (https://pkg.go.dev/text/template#Template.Delims).
+ .
+ To make the generation work properly, you can change the default
+ delimiters with -td. For example:
+ .
+   swag init -g http/api.go -td "[[,]]"
+ .
+ The new delimiter is a string with the format "<left delimiter>,<right
+ delimiter>".
+ .
+ About the Project
+ .
+ This project was inspired by yvasiyarov/swagger
+ (https://github.com/yvasiyarov/swagger) but we simplified the usage and
+ added support a variety of web frameworks. Gopher image source is
+ tenntenn/gopher-stickers (https://github.com/tenntenn/gopher-stickers). It
+ has licenses creative commons licensing
+ (http://creativecommons.org/licenses/by/3.0/deed.en).
+ .
+ Contributors
+ .
+ This project exists thanks to all the people who contribute. [Contribute
+ (/CONTRIBUTING.md)].
+ .
+ Backers
+ .
+ Thank you to all our backers! 🙏 [Become a backer
+ (https://opencollective.com/swag#backer)]
+ .
+ .
+ Sponsors
+ .
+ Support this project by becoming a sponsor. Your logo will show up here
+ with a link to your website. [Become a sponsor
+ (https://opencollective.com/swag#sponsor)]
+ .
+ .
+ License
+ .
+ FOSSA Status
+ (https://app.fossa.io/projects/git%2Bgithub.com%2Fswaggo%2Fswag?ref=badge_large)
+
+
+Package: swag
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends}
+Built-Using: ${misc:Built-Using}
+Description: Automatically generate RESTful API documentation with Swagger 2.0 for Go. (program)
+ swag
+ .
+ 🌍 *English ∙ 简体中文 ∙ Português*
+ .
+ .
+ Build Status (https://github.com/features/actions) Coverage Status
+ (https://codecov.io/gh/swaggo/swag) Go Report Card
+ (https://goreportcard.com/report/github.com/swaggo/swag) codebeat badge
+ (https://codebeat.co/projects/github-com-swaggo-swag-master) Go Doc
+ (https://godoc.org/github.com/swaggo/swag) Backers on Open Collective
+ Sponsors on Open Collective FOSSA Status
+ (https://app.fossa.io/projects/git%2Bgithub.com%2Fswaggo%2Fswag?ref=badge_shield)
+ Release (https://github.com/swaggo/swag/releases)
+ .
+ Swag converts Go annotations to Swagger Documentation 2.0. We've created
+ a variety of plugins for popular Go web frameworks. This allows you to
+ quickly integrate with an existing Go project (using Swagger UI).
+ .
+ Contents
+ .
+  * Getting started
+  * Supported Web Frameworks
+  * How to use it with Gin
+  * The swag formatter
+  * Implementation Status
+  * Declarative Comments Format
+        * General API Info
+        * API Operation
+        * Security
+  * Examples
+        * Descriptions over multiple lines
+        * User defined structure with an array type
+        * Function scoped struct declaration
+        * Model composition in response
+        * Add a headers in response
+        * Use multiple path params
+        * Example value of struct
+        * SchemaExample of body
+        * Description of struct
+        * Use swaggertype tag to supported custom type
+        * Use global overrides to support a custom type
+        * Use swaggerignore tag to exclude a field
+        * Add extension info to struct field
+        * Rename model to display
+        * How to use security annotations
+        * Add a description for enum items
+        * Generate only specific docs file types
+        * How to use Go generic types
+  * About the Project
+ .
+ Getting started
+ .
+  1. Add comments to your API source code, See Declarative Comments
+     Format.
+  2. Install swag by using:
+ .
+   go install github.com/swaggo/swag/cmd/swag@latest
+ .
+ To build from source you need Go (https://golang.org/dl/) (1.19 or
+ newer).
+ .
+ Alternatively you can run the docker image:
+ .
+   docker run --rm -v $(pwd):/code ghcr.io/swaggo/swag:latest
+ .
+ Or download a pre-compiled binary from the release page
+ (https://github.com/swaggo/swag/releases).
+ .
+  3. Run swag init in the project's root folder which contains the
+     main.go file. This will parse your comments and generate the required
+     files (docs folder and docs/docs.go).
+ .
+   swag init
+ .
+ Make sure to import the generated docs/docs.go so that your specific
+ configuration gets init'ed. If your General API annotations do not live
+ in main.go, you can let swag know with -g flag.
+ .
+   import _ "example-module-name/docs"
+ .
+   swag init -g http/api.go
+ .
+  4. (optional) Use swag fmt format the SWAG comment. (Please upgrade to
+     the latest version)
+ .
+   swag fmt
+ .
+ swag cli
+ .
+   swag init -h
+   NAME:
+      swag init - Create docs.go
+ .
+   USAGE:
+      swag init [command options] [arguments...]
+ .
+   OPTIONS:
+      --quiet, -q                            Make the logger quiet.
+ (default: false)
+      --generalInfo value, -g value          Go file path in which 'swagger
+ general API Info' is written (default: "main.go")
+      --dir value, -d value                  Directories you want to
+ parse,comma separated and general-info file must be in the first one
+ (default: "./")
+      --exclude value                        Exclude directories and files
+ when searching, comma separated
+      --propertyStrategy value, -p value     Property Naming Strategy like
+ snakecase,camelcase,pascalcase (default: "camelcase")
+      --output value, -o value               Output directory for all the
+ generated files(swagger.json, swagger.yaml and docs.go) (default:
+ "./docs")
+      --outputTypes value, --ot value        Output types of generated files
+ (docs.go, swagger.json, swagger.yaml) like go,json,yaml (default:
+ "go,json,yaml")
+      --parseVendor                          Parse go files in 'vendor'
+ folder, disabled by default (default: false)
+      --parseDependency, --pd                Parse go files inside dependency
+ folder, disabled by default (default: false)
+      --markdownFiles value, --md value      Parse folder containing markdown
+ files to use as description, disabled by default
+      --codeExampleFiles value, --cef value  Parse folder containing code
+ example files to use for the x-codeSamples extension, disabled by default
+      --parseInternal                        Parse go files in internal
+ packages, disabled by default (default: false)
+      --generatedTime                        Generate timestamp at the top
+ of docs.go, disabled by default (default: false)
+      --parseDepth value                     Dependency parse depth
+ (default: 100)
+      --requiredByDefault                    Set validation required for
+ all fields by default (default: false)
+      --instanceName value                   This parameter can be used to
+ name different swagger document instances. It is optional.
+      --overridesFile value                  File to read global type
+ overrides from. (default: ".swaggo")
+      --parseGoList                          Parse dependency via 'go list'
+ (default: true)
+      --tags value, -t value                 A comma-separated list of tags
+ to filter the APIs for which the documentation is generated.Special case
+ if the tag is prefixed with the '!' character then the APIs with that
+ tag will be excluded
+      --templateDelims value, --td value     Provide custom delimiters for Go
+ template generation. The format is leftDelim,rightDelim. For example:
+ "[[,]]"
+      --collectionFormat value, --cf value   Set default collection format
+ (default: "csv")
+      --state value                          Initial state for the state
+ machine (default: ""), @HostState in root file, @State in other files
+      --parseFuncBody                        Parse API info within body of
+ functions in go files, disabled by default (default: false)
+      --help, -h                             show help (default: false)
+ .
+   swag fmt -h
+   NAME:
+      swag fmt - format swag comments
+ .
+   USAGE:
+      swag fmt [command options] [arguments...]
+ .
+   OPTIONS:
+      --dir value, -d value          Directories you want to parse,comma
+ separated and general-info file must be in the first one (default: "./")
+      --exclude value                Exclude directories and files when
+ searching, comma separated
+      --generalInfo value, -g value  Go file path in which 'swagger general
+ API Info' is written (default: "main.go")
+      --help, -h                     show help (default: false)
+ .
+ .
+ Supported Web Frameworks
+ .
+  * gin (http://github.com/swaggo/gin-swagger)
+  * echo (http://github.com/swaggo/echo-swagger)
+  * buffalo (https://github.com/swaggo/buffalo-swagger)
+  * net/http (https://github.com/swaggo/http-swagger)
+  * gorilla/mux (https://github.com/swaggo/http-swagger)
+  * go-chi/chi (https://github.com/swaggo/http-swagger)
+  * flamingo (https://github.com/i-love-flamingo/swagger)
+  * fiber (https://github.com/gofiber/swagger)
+  * atreugo (https://github.com/Nerzal/atreugo-swagger)
+  * hertz (https://github.com/hertz-contrib/swagger)
+ .
+ How to use it with Gin
+ .
+ Find the example source code here
+ (https://github.com/swaggo/swag/tree/master/example/celler).
+ .
+ Finish the steps in Getting started
+ .
+  1. After using swag init to generate Swagger 2.0 docs, import the
+     following packages:
+ .
+   import "github.com/swaggo/gin-swagger" // gin-swagger middleware
+   import "github.com/swaggo/files" // swagger embed files
+ .
+  2. Add General API annotations in main.go code:
+ .
+   // @title           Swagger Example API
+   // @version         1.0
+   // @description     This is a sample server celler server.
+   // @termsOfService  http://swagger.io/terms/
+ .
+   // @contact.name   API Support
+   // @contact.url    http://www.swagger.io/support
+   // @contact.email  support@swagger.io
+ .
+   // @license.name  Apache 2.0
+   // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+ .
+   // @host      localhost:8080
+   // @BasePath  /api/v1
+ .
+   // @securityDefinitions.basic  BasicAuth
+ .
+   // @externalDocs.description  OpenAPI
+   // @externalDocs.url          https://swagger.io/resources/open-api/
+   func main() {
+   	r := gin.Default()
+ .
+   	c := controller.NewController()
+ .
+   	v1 := r.Group("/api/v1")
+   	{
+   		accounts := v1.Group("/accounts")
+   		{
+   			accounts.GET(":id", c.ShowAccount)
+   			accounts.GET("", c.ListAccounts)
+   			accounts.POST("", c.AddAccount)
+   			accounts.DELETE(":id", c.DeleteAccount)
+   			accounts.PATCH(":id", c.UpdateAccount)
+   			accounts.POST(":id/images", c.UploadAccountImage)
+   		}
+       //...
+   	}
+   	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+   	r.Run(":8080")
+   }
+   //...
+ .
+ Additionally some general API info can be set dynamically. The generated
+ code package docs exports SwaggerInfo variable which we can use to set
+ the title, description, version, host and base path programmatically.
+ Example using Gin:
+ .
+   package main
+ .
+   import (
+   	"github.com/gin-gonic/gin"
+   	"github.com/swaggo/files"
+   	"github.com/swaggo/gin-swagger"
+ .
+   	"./docs" // docs is generated by Swag CLI, you have to import it.
+   )
+ .
+   // @contact.name   API Support
+   // @contact.url    http://www.swagger.io/support
+   // @contact.email  support@swagger.io
+ .
+   // @license.name  Apache 2.0
+   // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+   func main() {
+ .
+   	// programmatically set swagger info
+   	docs.SwaggerInfo.Title = "Swagger Example API"
+   	docs.SwaggerInfo.Description = "This is a sample server Petstore
+ server."
+   	docs.SwaggerInfo.Version = "1.0"
+   	docs.SwaggerInfo.Host = "petstore.swagger.io"
+   	docs.SwaggerInfo.BasePath = "/v2"
+   	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+ .
+   	r := gin.New()
+ .
+   	// use ginSwagger middleware to serve the API docs
+   	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+ .
+   	r.Run()
+   }
+ .
+  3. Add API Operation annotations in controller code
+ .
+   package controller
+ .
+   import (
+       "fmt"
+       "net/http"
+       "strconv"
+ .
+       "github.com/gin-gonic/gin"
+       "github.com/swaggo/swag/example/celler/httputil"
+       "github.com/swaggo/swag/example/celler/model"
+   )
+ .
+   // ShowAccount godoc
+   // @Summary      Show an account
+   // @Description  get string by ID
+   // @Tags         accounts
+   // @Accept       json
+   // @Produce      json
+   // @Param        id   path      int  true  "Account ID"
+   // @Success      200  {object}  model.Account
+   // @Failure      400  {object}  httputil.HTTPError
+   // @Failure      404  {object}  httputil.HTTPError
+   // @Failure      500  {object}  httputil.HTTPError
+   // @Router       /accounts/{id} [get]
+   func (c *Controller) ShowAccount(ctx *gin.Context) {
+     id := ctx.Param("id")
+     aid, err := strconv.Atoi(id)
+     if err != nil {
+       httputil.NewError(ctx, http.StatusBadRequest, err)
+       return
+     }
+     account, err := model.AccountOne(aid)
+     if err != nil {
+       httputil.NewError(ctx, http.StatusNotFound, err)
+       return
+     }
+     ctx.JSON(http.StatusOK, account)
+   }
+ .
+   // ListAccounts godoc
+   // @Summary      List accounts
+   // @Description  get accounts
+   // @Tags         accounts
+   // @Accept       json
+   // @Produce      json
+   // @Param        q    query     string  false  "name search by q"
+ Format(email)
+   // @Success      200  {array}   model.Account
+   // @Failure      400  {object}  httputil.HTTPError
+   // @Failure      404  {object}  httputil.HTTPError
+   // @Failure      500  {object}  httputil.HTTPError
+   // @Router       /accounts [get]
+   func (c *Controller) ListAccounts(ctx *gin.Context) {
+     q := ctx.Request.URL.Query().Get("q")
+     accounts, err := model.AccountsAll(q)
+     if err != nil {
+       httputil.NewError(ctx, http.StatusNotFound, err)
+       return
+     }
+     ctx.JSON(http.StatusOK, accounts)
+   }
+   //...
+ .
+   swag init
+ .
+  4. Run your app, and browse to
+     http://localhost:8080/swagger/index.html. You will see Swagger 2.0 Api
+     documents as shown below:
+ .
+ [Image: swagger_index.html]
+ (https://raw.githubusercontent.com/swaggo/swag/master/assets/swagger-
+ image.png)
+ .
+ The swag formatter
+ .
+ The Swag Comments can be automatically formatted, just like 'go fmt'.
+ Find the result of formatting here
+ (https://github.com/swaggo/swag/tree/master/example/celler).
+ .
+ Usage:
+ .
+   swag fmt
+ .
+ Exclude folder：
+ .
+   swag fmt -d ./ --exclude ./internal
+ .
+ When using swag fmt, you need to ensure that you have a doc comment for
+ the function to ensure correct formatting. This is due to swag fmt
+ indenting swag comments with tabs, which is only allowed *after* a
+ standard doc comment.
+ .
+ For example, use
+ .
+   // ListAccounts lists all existing accounts
+   //
+   //  @Summary      List accounts
+   //  @Description  get accounts
+   //  @Tags         accounts
+   //  @Accept       json
+   //  @Produce      json
+   //  @Param        q    query     string  false  "name search by q"
+ Format(email)
+   //  @Success      200  {array}   model.Account
+   //  @Failure      400  {object}  httputil.HTTPError
+   //  @Failure      404  {object}  httputil.HTTPError
+   //  @Failure      500  {object}  httputil.HTTPError
+   //  @Router       /accounts [get]
+   func (c *Controller) ListAccounts(ctx *gin.Context) {
+ .
+ Implementation Status
+ .
+ Swagger 2.0 document (https://swagger.io/docs/specification/2-0/basic-
+ structure/)
+ .
+  [x] Basic Structure
+  [x] API Host and Base Path
+  [x] Paths and Operations
+  [x] Describing Parameters
+  [x] Describing Request Body
+  [x] Describing Responses
+  [x] MIME Types
+  [x] Authentication
+      [x] Basic Authentication
+      [x] API Keys
+  [x] Adding Examples
+  [x] File Upload
+  [x] Enums
+  [x] Grouping Operations With Tags
+  [ ] Swagger Extensions
+ .
+ Declarative Comments Format
+ .
+ General API Info
+ .
+ **Example** celler/main.go
+ (https://github.com/swaggo/swag/blob/master/example/celler/main.go)
+ .
+          ANNOTATION        |             DESCRIPTION              |
+ EXAMPLE
+ ---------------------------+--------------------------------------+---------------------------------
+   title                    | Required. The title of the           | //
+ @title Swagger Example API
+                            | application.                         |
+   version                  | Required. Provides the version       | //
+ @version 1.0
+                            | of the application API.              |
+   description              | A short description of the           | //
+ @description This is a
+                            | application.                         |
+ sample server celler server.
+   tag.name                 | Name of a tag.                       | //
+ @tag.name This is the name
+                            |                                      | of
+ the tag
+   tag.description          | Description of the tag               | //
+ @tag.description Cool
+                            |                                      |
+ Description
+   tag.docs.url             | Url of the external                  | //
+ @tag.docs.url
+                            | Documentation of the tag             |
+   tag.docs.description     | Description of the external          | //
+ @tag.docs.description Best
+                            | Documentation of the tag             |
+ example documentation
+   termsOfService           | The Terms of Service for the         | //
+ @termsOfService
+                            | API.                                 |
+   contact.name             | The contact information for          | //
+ @contact.name API Support
+                            | the exposed API.                     |
+   contact.url              | The URL pointing to the              | //
+ @contact.url
+                            | contact information. MUST be         |
+                            | in the format of a URL.              |
+   contact.email            | The email address of the             | //
+ @contact.email
+                            | contact person/organization.         |
+                            | MUST be in the format of an          |
+                            | email address.                       |
+   license.name             | Required. The license name           | //
+ @license.name Apache 2.0
+                            | used for the API.                    |
+   license.url              | A URL to the license used for        | //
+ @license.url
+                            | the API. MUST be in the format       |
+                            | of a URL.                            |
+   host                     | The host (name or ip) serving        | //
+ @host localhost:8080
+                            | the API.                             |
+   BasePath                 | The base path on which the API       | //
+ @BasePath /api/v1
+                            | is served.                           |
+   accept                   | A list of MIME types the APIs        | //
+ @accept json
+                            | can consume. Note that Accept        |
+                            | only affects operations with         |
+                            | a request body, such as POST,        |
+                            | PUT and PATCH.  Value MUST be        |
+                            | as described under Mime Types.       |
+   produce                  | A list of MIME types the APIs        | //
+ @produce json
+                            | can produce. Value MUST be as        |
+                            | described under Mime Types.          |
+   query.collection.format  | The default collection(array)        | //
+ @query.collection.format
+                            | param format in                      |
+ multi
+                            | query,enums:csv,multi,pipes,tsv,ssv. |
+                            | If not set, csv is the default.      |
+   schemes                  | The transfer protocol for the        | //
+ @schemes http https
+                            | operation that separated by          |
+                            | spaces.                              |
+   externalDocs.description | Description of the external          | //
+ @externalDocs.description
+                            | document.                            |
+ OpenAPI
+   externalDocs.url         | URL of the external document.        | //
+ @externalDocs.url
+   x-name                   | The extension key, must be           | // @x-
+ example-key {"key":
+                            | start by x- and take only json       |
+ "value"}
+                            | value                                |
+ .
+ Using markdown descriptions
+ .
+ When a short string in your documentation is insufficient, or you need
+ images, code examples and things like that you may want to use markdown
+ descriptions. In order to use markdown descriptions use the following
+ annotations.
+ .
+          ANNOTATION        |          DESCRIPTION           |
+ EXAMPLE
+ ---------------------------+--------------------------------+---------------------------------
+   title                    | Required. The title of the     | // @title
+ Swagger Example API
+                            | application.                   |
+   version                  | Required. Provides the version | //
+ @version 1.0
+                            | of the application API.        |
+   description.markdown     | A short description of the     | //
+ @description.markdown No
+                            | application. Parsed from       | value
+ needed, this parses the
+                            | the api.md file. This is an    |
+ description from api.md
+                            | alternative to @description    |
+   tag.name                 | Name of a tag.                 | //
+ @tag.name This is the name
+                            |                                | of the tag
+   tag.description.markdown | Description of the tag         | //
+ @tag.description.markdown
+                            | this is an alternative         |
+                            | to tag.description. The        |
+                            | description will be read from  |
+                            | a file named like tagname.md   |
+ .
+ API Operation
+ .
+ **Example** celler/controller
+ (https://github.com/swaggo/swag/tree/master/example/celler/controller)
+ .
+        ANNOTATION      |          DESCRIPTION
+ -----------------------+---------------------------------
+   description          | A verbose explanation of the
+                        | operation behavior.
+   description.markdown | A short description of the
+                        | application. The description
+                        | will be read from a file.
+                        | E.g. @description.markdown
+                        | details will load details.md
+   id                   | A unique string used to
+                        | identify the operation.
+                        | Must be unique among all API
+                        | operations.
+   tags                 | A list of tags to each API
+                        | operation that separated by
+                        | commas.
+   summary              | A short summary of what the
+                        | operation does.
+   accept               | A list of MIME types the APIs
+                        | can consume. Note that Accept
+                        | only affects operations with
+                        | a request body, such as POST,
+                        | PUT and PATCH.  Value MUST be
+                        | as described under Mime Types.
+   produce              | A list of MIME types the APIs
+                        | can produce. Value MUST be as
+                        | described under Mime Types.
+   param                | Parameters that separated
+                        | by spaces. param
+                        | name,param type,data
+                        | type,is mandatory?,comment
+                        | attribute(optional)
+   security             | Security to each API
+                        | operation.
+   success              | Success response that
+                        | separated by spaces. return
+                        | code or default,{param
+                        | type},data type,comment
+   failure              | Failure response that
+                        | separated by spaces. return
+                        | code or default,{param
+                        | type},data type,comment
+   response             | As same as success and failure
+   header               | Header in response that
+                        | separated by spaces. return
+                        | code,{param type},data
+                        | type,comment
+   router               | Path definition that separated
+                        | by spaces. path,[httpMethod]
+   deprecatedrouter     | As same as router, but
+                        | deprecated.
+   x-name               | The extension key, must be
+                        | start by x- and take only json
+                        | value.
+   x-codeSample         | Optional Markdown usage. take
+                        | file as parameter. This will
+                        | then search for a file named
+                        | like the summary in the given
+                        | folder.
+   deprecated           | Mark endpoint as deprecated.
+ .
+ Mime Types
+ .
+ swag accepts all MIME Types which are in the correct format, that is,
+ match */*. Besides that, swag also accepts aliases for some MIME Types
+ as follows:
+ .
+           ALIAS         |             MIME TYPE
+ ------------------------+------------------------------------
+   json                  | application/json
+   xml                   | text/xml
+   plain                 | text/plain
+   html                  | text/html
+   mpfd                  | multipart/form-data
+   x-www-form-urlencoded | application/x-www-form-urlencoded
+   json-api              | application/vnd.api+json
+   json-stream           | application/x-json-stream
+   octet-stream          | application/octet-stream
+   png                   | image/png
+   jpeg                  | image/jpeg
+   gif                   | image/gif
+ .
+ Param Type
+ .
+  * query
+  * path
+  * header
+  * body
+  * formData
+ .
+ Data Type
+ .
+  * string (string)
+  * integer (int, uint, uint32, uint64)
+  * number (float32)
+  * boolean (bool)
+  * file (param data type when uploading)
+  * user defined struct
+ .
+ Security
+ .
+                 ANNOTATION               |       DESCRIPTION        |
+ PARAMETERS           |                 EXAMPLE
+ -----------------------------------------+--------------------------+--------------------------------+------------------------------------------
+   securitydefinitions.basic              | Basic auth.              |
+ | // @securityDefinitions.basic
+                                          |                          |
+ | BasicAuth
+   securitydefinitions.apikey             | API key auth.            |
+ in, name, description          | // @securityDefinitions.apikey
+                                          |                          |
+ | ApiKeyAuth
+   securitydefinitions.oauth2.application | OAuth2 application auth. |
+ tokenUrl, scope, description   | //
+                                          |                          |
+ | @securitydefinitions.oauth2.application
+                                          |                          |
+ | OAuth2Application
+   securitydefinitions.oauth2.implicit    | OAuth2 implicit auth.    |
+ authorizationUrl, scope,       | //
+                                          |                          |
+ description                    | @securitydefinitions.oauth2.implicit
+                                          |                          |
+ | OAuth2Implicit
+   securitydefinitions.oauth2.password    | OAuth2 password auth.    |
+ tokenUrl, scope, description   | //
+                                          |                          |
+ | @securitydefinitions.oauth2.password
+                                          |                          |
+ | OAuth2Password
+   securitydefinitions.oauth2.accessCode  | OAuth2 access code auth. |
+ tokenUrl, authorizationUrl,    | //
+                                          |                          |
+ scope, description             | @securitydefinitions.oauth2.accessCode
+                                          |                          |
+ | OAuth2AccessCode
+ .
+   PARAMETERS ANNOTATION |            EXAMPLE
+ ------------------------+---------------------------------
+   in                    | // @in header
+   name                  | // @name Authorization
+   tokenUrl              | // @tokenUrl
+   authorizationurl      | // @authorizationurl
+   scope.hoge            | // @scope.write Grants write
+                         | access
+   description           | // @description OAuth protects
+                         | our entity endpoints
+ .
+ Attribute
+ .
+   // @Param   enumstring  query     string     false  "string enums"
+ Enums(A, B, C)
+   // @Param   enumint     query     int        false  "int enums"
+ Enums(1, 2, 3)
+   // @Param   enumnumber  query     number     false  "int enums"
+ Enums(1.1, 1.2, 1.3)
+   // @Param   string      query     string     false  "string valid"
+ minlength(5)  maxlength(10)
+   // @Param   int         query     int        false  "int valid"
+ minimum(1)    maximum(10)
+   // @Param   default     query     string     false  "string default"
+ default(A)
+   // @Param   example     query     string     false  "string example"
+ example(string)
+   // @Param   collection  query     []string   false  "string
+ collection"  collectionFormat(multi)
+   // @Param   extensions  query     []string   false  "string
+ collection"  extensions(x-example=test,x-nullable)
+ .
+ It also works for the struct fields:
+ .
+   type Foo struct {
+       Bar string `minLength:"4" maxLength:"16" example:"random string"`
+       Baz int `minimum:"10" maximum:"20" default:"15"`
+       Qux []string `enums:"foo,bar,baz"`
+   }
+ .
+ Available
+ .
+      FIELD NAME    |  TYPE   |          DESCRIPTION
+ -------------------+---------+---------------------------------
+   validate         | string  | Determines the validation for
+                    |         | the parameter. Possible values
+                    |         | are: required,optional.
+   default          | *       | Declares the value of the
+                    |         | parameter that the server will
+                    |         | use if none is provided, for
+                    |         | example a "count" to control
+                    |         | the number of results per
+                    |         | page might default to 100 if
+                    |         | not supplied by the client in
+                    |         | the request. (Note: "default"
+                    |         | has no meaning for required
+                    |         | parameters.)  See . Unlike
+                    |         | JSON Schema this value MUST
+                    |         | conform to the defined type
+                    |         | for this parameter.
+   maximum          | number  | See .
+   minimum          | number  | See .
+   multipleOf       | number  | See .
+   maxLength        | integer | See .
+   minLength        | integer | See .
+   enums            | [\*]    | See .
+   format           | string  | The extending format for the
+                    |         | previously mentioned type. See
+                    |         | Data Type Formats for further
+                    |         | details.
+   collectionFormat | string  | Determines the format of
+                    |         | the array if type array is
+                    |         | used. Possible values are:
+                    |         | csv - comma separated values
+                    |         | foo,bar. ssv - space separated
+                    |         | values foo bar. tsv - tab
+                    |         | separated values foo\tbar.
+                    |         | pipes - pipe separated
+                    |         | values foo&#124;bar. multi
+                    |         | - corresponds to multiple
+                    |         | parameter instances instead of
+                    |         | multiple values for a single
+                    |         | instance foo=bar&foo=baz. This
+                    |         | is valid only for parameters
+                    |         | in "query" or "formData".
+                    |         | Default value is csv.
+   example          | *       | Declares the example for the
+                    |         | parameter value
+   extensions       | string  | Add extension to parameters.
+ .
+ Future
+ .
+   FIELD NAME  |  TYPE   | DESCRIPTION
+ --------------+---------+--------------
+   pattern     | string  | See .
+   maxItems    | integer | See .
+   minItems    | integer | See .
+   uniqueItems | boolean | See .
+ .
+ Examples
+ .
+ Descriptions over multiple lines
+ .
+ You can add descriptions spanning multiple lines in either the general
+ api description or routes definitions like so:
+ .
+   // @description This is the first line
+   // @description This is the second line
+   // @description And so forth.
+ .
+ User defined structure with an array type
+ .
+   // @Success 200 {array} model.Account <-- This is a user defined struct.
+ .
+   package model
+ .
+   type Account struct {
+       ID   int    `json:"id" example:"1"`
+       Name string `json:"name" example:"account name"`
+   }
+ .
+ Function scoped struct declaration
+ .
+ You can declare your request response structs inside a function body.
+ You must have to follow the naming convention <package-name>.<function-
+ name>.<struct-name> .
+ .
+   package main
+ .
+   // @Param request body main.MyHandler.request true "query params"
+   // @Success 200 {object} main.MyHandler.response
+   // @Router /test [post]
+   func MyHandler() {
+   	type request struct {
+   		RequestField string
+   	}
+ .
+   	type response struct {
+   		ResponseField string
+   	}
+   }
+ .
+ Model composition in response
+ .
+   // JSONResult's data field will be overridden by the specific type
+ proto.Order
+   @success 200 {object} jsonresult.JSONResult{data=proto.Order} "desc"
+ .
+   type JSONResult struct {
+       Code    int          `json:"code" `
+       Message string       `json:"message"`
+       Data    interface{}  `json:"data"`
+   }
+ .
+   type Order struct { //in `proto` package
+       Id  uint            `json:"id"`
+       Data  interface{}   `json:"data"`
+   }
+ .
+  * also support array of objects and primitive types as nested response
+ .
+   @success 200 {object} jsonresult.JSONResult{data=[]proto.Order} "desc"
+   @success 200 {object} jsonresult.JSONResult{data=string} "desc"
+   @success 200 {object} jsonresult.JSONResult{data=[]string} "desc"
+ .
+  * overriding multiple fields. field will be added if not exists
+ .
+   @success 200 {object}
+ jsonresult.JSONResult{data1=string,data2=[]string,data3=proto.Order,data4=[]proto.Order}
+ "desc"
+ .
+  * overriding deep-level fields
+ .
+   type DeepObject struct { //in `proto` package
+   	...
+   }
+   @success 200 {object}
+ jsonresult.JSONResult{data1=proto.Order{data=proto.DeepObject},data2=[]proto.Order{data=[]proto.DeepObject}}
+ "desc"
+ .
+ Add a headers in response
+ .
+   // @Success      200              {string}  string    "ok"
+   // @failure      400              {string}  string    "error"
+   // @response     default          {string}  string    "other error"
+   // @Header       200              {string}  Location  "/entity/1"
+   // @Header       200,400,default  {string}  Token     "token"
+   // @Header       all              {string}  Token2    "token2"
+ .
+ Use multiple path params
+ .
+   /// ...
+   // @Param group_id   path int true "Group ID"
+   // @Param account_id path int true "Account ID"
+   // ...
+   // @Router /examples/groups/{group_id}/accounts/{account_id} [get]
+ .
+ Add multiple paths
+ .
+   /// ...
+   // @Param group_id path int true "Group ID"
+   // @Param user_id  path int true "User ID"
+   // ...
+   // @Router /examples/groups/{group_id}/user/{user_id}/address [put]
+   // @Router /examples/user/{user_id}/address [put]
+ .
+ Example value of struct
+ .
+   type Account struct {
+       ID   int    `json:"id" example:"1"`
+       Name string `json:"name" example:"account name"`
+       PhotoUrls []string `json:"photo_urls"
+ example:"http://test/image/1.jpg,http://test/image/2.jpg"`
+   }
+ .
+ SchemaExample of body
+ .
+   // @Param email body string true "message/rfc822"
+ SchemaExample(Subject: Testmail\r\n\r\nBody Message\r\n)
+ .
+ Description of struct
+ .
+   // Account model info
+   // @Description User account information
+   // @Description with user id and username
+   type Account struct {
+   	// ID this is userid
+   	ID   int    `json:"id"`
+   	Name string `json:"name"` // This is Name
+   }
+ .
+ #708 (https://github.com/swaggo/swag/issues/708) The parser handles only
+ struct comments starting with @Description attribute. But it writes all
+ struct field comments as is.
+ .
+ So, generated swagger doc as follows:
+ .
+   "Account": {
+     "type":"object",
+     "description": "User account information with user id and username"
+     "properties": {
+       "id": {
+         "type": "integer",
+         "description": "ID this is userid"
+       },
+       "name": {
+         "type":"string",
+         "description": "This is Name"
+       }
+     }
+   }
+ .
+ Use swaggertype tag to supported custom type
+ .
+ #201 (https://github.com/swaggo/swag/issues/201#issuecomment-475479409)
+ .
+   type TimestampTime struct {
+       time.Time
+   }
+ .
+   ///implement encoding.JSON.Marshaler interface
+   func (t *TimestampTime) MarshalJSON() ([]byte, error) {
+       bin := make([]byte, 16)
+       bin = strconv.AppendInt(bin[:0], t.Time.Unix(), 10)
+       return bin, nil
+   }
+ .
+   func (t *TimestampTime) UnmarshalJSON(bin []byte) error {
+       v, err := strconv.ParseInt(string(bin), 10, 64)
+       if err != nil {
+           return err
+       }
+       t.Time = time.Unix(v, 0)
+       return nil
+   }
+   ///
+ .
+   type Account struct {
+       // Override primitive type by simply specifying it via
+ `swaggertype` tag
+       ID     sql.NullInt64 `json:"id" swaggertype:"integer"`
+ .
+       // Override struct type to a primitive type 'integer' by
+ specifying it via `swaggertype` tag
+       RegisterTime TimestampTime `json:"register_time"
+ swaggertype:"primitive,integer"`
+ .
+       // Array types can be overridden using "array,<prim_type>" format
+       Coeffs []big.Float `json:"coeffs" swaggertype:"array,number"`
+   }
+ .
+ #379 (https://github.com/swaggo/swag/issues/379)
+ .
+   type CerticateKeyPair struct {
+   	Crt []byte `json:"crt" swaggertype:"string" format:"base64"
+ example:"U3dhZ2dlciByb2Nrcw=="`
+   	Key []byte `json:"key" swaggertype:"string" format:"base64"
+ example:"U3dhZ2dlciByb2Nrcw=="`
+   }
+ .
+ generated swagger doc as follows:
+ .
+   "api.MyBinding": {
+     "type":"object",
+     "properties":{
+       "crt":{
+         "type":"string",
+         "format":"base64",
+         "example":"U3dhZ2dlciByb2Nrcw=="
+       },
+       "key":{
+         "type":"string",
+         "format":"base64",
+         "example":"U3dhZ2dlciByb2Nrcw=="
+       }
+     }
+   }
+ .
+ .
+ Use global overrides to support a custom type
+ .
+ If you are using generated files, the swaggertype or swaggerignore tags
+ may not be possible.
+ .
+ By passing a mapping to swag with --overridesFile you can tell swag to use
+ one type in place of another wherever it appears. By default, if a
+ .swaggo file is present in the current directory it will be used.
+ .
+ Go code:
+ .
+   type MyStruct struct {
+     ID     sql.NullInt64 `json:"id"`
+     Name   sql.NullString `json:"name"`
+   }
+ .
+ .swaggo:
+ .
+   // Replace all NullInt64 with int
+   replace database/sql.NullInt64 int
+ .
+   // Don't include any fields of type database/sql.NullString in the
+ swagger docs
+   skip    database/sql.NullString
+ .
+ Possible directives are comments (beginning with //), replace
+ path/to/a.type path/to/b.type, and skip path/to/a.type.
+ .
+ (Note that the full paths to any named types must be provided to prevent
+ problems when multiple packages define a type with the same name)
+ .
+ Rendered:
+ .
+   "types.MyStruct": {
+     "id": "integer"
+   }
+ .
+ Use swaggerignore tag to exclude a field
+ .
+   type Account struct {
+       ID   string    `json:"id"`
+       Name string     `json:"name"`
+       Ignored int     `swaggerignore:"true"`
+   }
+ .
+ Add extension info to struct field
+ .
+   type Account struct {
+       ID   string    `json:"id"   extensions:"x-nullable,x-abc=def,!x-
+ omitempty"` // extensions fields must start with "x-"
+   }
+ .
+ generate swagger doc as follows:
+ .
+   "Account": {
+       "type": "object",
+       "properties": {
+           "id": {
+               "type": "string",
+               "x-nullable": true,
+               "x-abc": "def",
+               "x-omitempty": false
+           }
+       }
+   }
+ .
+ Rename model to display
+ .
+   type Resp struct {
+   	Code int
+   }//@name Response
+ .
+ How to use security annotations
+ .
+ General API info.
+ .
+   // @securityDefinitions.basic BasicAuth
+ .
+   // @securitydefinitions.oauth2.application OAuth2Application
+   // @tokenUrl https://example.com/oauth/token
+   // @scope.write Grants write access
+   // @scope.admin Grants read and write access to administrative
+ information
+ .
+ Each API operation.
+ .
+   // @Security ApiKeyAuth
+ .
+ Make it AND condition
+ .
+   // @Security ApiKeyAuth
+   // @Security OAuth2Application[write, admin]
+ .
+ Make it OR condition
+ .
+   // @Security ApiKeyAuth || firebase
+   // @Security OAuth2Application[write, admin] || APIKeyAuth
+ .
+ Add a description for enum items
+ .
+   type Example struct {
+   	// Sort order:
+   	// * asc - Ascending, from A to Z.
+   	// * desc - Descending, from Z to A.
+   	Order string `enums:"asc,desc"`
+   }
+ .
+ Generate only specific docs file types
+ .
+ By default swag command generates Swagger specification in three
+ different files/file types:
+ .
+  * docs.go
+  * swagger.json
+  * swagger.yaml
+ .
+ If you would like to limit a set of file types which should be generated
+ you can use --outputTypes (short -ot) flag. Default value is go,json,yaml -
+ output types separated with comma. To limit output only to go and yaml
+ files, you would write go,yaml. With complete command that would be swag
+ init --outputTypes go,yaml.
+ .
+ How to use Generics
+ .
+   // @Success 200 {object} web.GenericNestedResponse[types.Post]
+   // @Success 204 {object} web.GenericNestedResponse[types.Post,
+ Types.AnotherOne]
+   // @Success 201 {object}
+ web.GenericNestedResponse[web.GenericInnerType[types.Post]]
+   func GetPosts(w http.ResponseWriter, r *http.Request) {
+   	_ = web.GenericNestedResponse[types.Post]{}
+   }
+ .
+ See this file
+ (https://github.com/swaggo/swag/blob/master/testdata/generics_nested/api/api.go)
+ for more details and other examples.
+ .
+ Change the default Go Template action delimiters
+ .
+ #980 (https://github.com/swaggo/swag/issues/980) #1177
+ (https://github.com/swaggo/swag/issues/1177)
+ .
+ If your swagger annotations or struct fields contain "{{" or "}}", the
+ template generation will most likely fail, as these are the default
+ delimiters for go templates
+ (https://pkg.go.dev/text/template#Template.Delims).
+ .
+ To make the generation work properly, you can change the default
+ delimiters with -td. For example:
+ .
+   swag init -g http/api.go -td "[[,]]"
+ .
+ The new delimiter is a string with the format "<left delimiter>,<right
+ delimiter>".
+ .
+ About the Project
+ .
+ This project was inspired by yvasiyarov/swagger
+ (https://github.com/yvasiyarov/swagger) but we simplified the usage and
+ added support a variety of web frameworks. Gopher image source is
+ tenntenn/gopher-stickers (https://github.com/tenntenn/gopher-stickers). It
+ has licenses creative commons licensing
+ (http://creativecommons.org/licenses/by/3.0/deed.en).
+ .
+ Contributors
+ .
+ This project exists thanks to all the people who contribute. [Contribute
+ (/CONTRIBUTING.md)].
+ .
+ Backers
+ .
+ Thank you to all our backers! 🙏 [Become a backer
+ (https://opencollective.com/swag#backer)]
+ .
+ .
+ Sponsors
+ .
+ Support this project by becoming a sponsor. Your logo will show up here
+ with a link to your website. [Become a sponsor
+ (https://opencollective.com/swag#sponsor)]
+ .
+ .
+ License
+ .
+ FOSSA Status
+ (https://app.fossa.io/projects/git%2Bgithub.com%2Fswaggo%2Fswag?ref=badge_large)
+
