@@ -39,6 +39,7 @@ Depends: golang-github-gin-gonic-gin-dev,
          golang-k8s-sigs-yaml-dev,
          golang-golang-x-text-dev,
          golang-github-swaggo-files-dev,
+         golang-github-kylebanks-depth-dev,
          ${misc:Depends}
 Description: Automatically generate RESTful API documentation with Swagger 2.0 for Go. (library)
  swag
