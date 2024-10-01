@@ -1,7 +1,8 @@
-golang-github-swaggo-swag (1.16.3-3) UNRELEASED; urgency=medium
+golang-github-swaggo-swag (1.16.3-4) UNRELEASED; urgency=medium
 
   * Initial release (Closes: TODO)
   * fix dependency
   * fix deps
+  * add build dependency
 
- -- lynx <neolynx@gmail.com>  Tue, 01 Oct 2024 15:56:29 +0200
+ -- lynx <neolynx@gmail.com>  Tue, 01 Oct 2024 16:03:01 +0200
