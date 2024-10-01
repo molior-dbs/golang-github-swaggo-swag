@@ -4,3 +4,4 @@ targets:
   - "1.5"
 build_after:
   - "golang-github-swaggo-files"
+  - "golang-github-kylebanks-depth"

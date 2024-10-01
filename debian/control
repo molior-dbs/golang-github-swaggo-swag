@@ -17,6 +17,7 @@ Build-Depends: debhelper-compat (= 13),
                golang-k8s-sigs-yaml-dev,
                golang-golang-x-text-dev,
                golang-github-swaggo-files-dev,
+               golang-github-kylebanks-depth-dev,
                git
 Standards-Version: 4.6.0
 Vcs-Browser: https://salsa.debian.org/go-team/packages/golang-github-swaggo-swag
