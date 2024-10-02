@@ -3,4 +3,12 @@
 %:
 	dh $@ --builddirectory=_build --buildsystem=golang --with=golang
 
+override_dh_auto_build:
+	# Use go install directly without trimpath
+	GO111MODULE=off GOPATH=$$PWD/_build:/usr/share/gocode go install -v -p $(shell nproc) \
+		github.com/swaggo/swag \
+		github.com/swaggo/swag/cmd/swag \
+		github.com/swaggo/swag/format \
+		github.com/swaggo/swag/gen
+
 override_dh_auto_test:
