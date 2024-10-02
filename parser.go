@@ -1711,10 +1711,12 @@ func (parser *Parser) getAllGoFileInfo(packageDir, searchDir string) error {
 func (parser *Parser) getAllGoFileInfoFromDeps(pkg *depth.Pkg, parseFlag ParseFlag) error {
 	ignoreInternal := pkg.Internal && !parser.ParseInternal
 	if ignoreInternal || !pkg.Resolved { // ignored internal and not resolved dependencies
+                fmt.Printf("ignoreInternal || !pkg.Resolved\n")
 		return nil
 	}
 
 	if pkg.Raw != nil && parser.skipPackageByPrefix(pkg.Raw.ImportPath) {
+                fmt.Printf("pkg.Raw != nil && parser.skipPackageByPrefix(pkg.Raw.ImportPath)\n")
 		return nil // ignored by user-defined package path prefixes
 	}
 
@@ -1736,6 +1738,7 @@ func (parser *Parser) getAllGoFileInfoFromDeps(pkg *depth.Pkg, parseFlag ParseFl
 		}
 
 		path := filepath.Join(srcDir, f.Name())
+                fmt.Printf("parse %s\n", path)
 		if err := parser.parseFile(pkg.Name, path, nil, parseFlag); err != nil {
 			return err
 		}
