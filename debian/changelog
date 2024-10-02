@@ -1,4 +1,4 @@
-golang-github-swaggo-swag (1.16.3-11) UNRELEASED; urgency=medium
+golang-github-swaggo-swag (1.16.3-12) UNRELEASED; urgency=medium
 
   * Initial release (Closes: TODO)
   * fix dependency
@@ -12,5 +12,14 @@ golang-github-swaggo-swag (1.16.3-11) UNRELEASED; urgency=medium
   * add dependeny
   * debug
   * debug
+  * debian: build without trimpath, breaks doc generation
+  * golang-github-swaggo-swag: release 1.16.3-11
+  * add dependeny
+  * disable tests
+  * add dependency
+  * fi xmolior yml
+  * remove example
+  * fix dependency
+  * add build dependency
 
- -- lynx <neolynx@gmail.com>  Wed, 02 Oct 2024 13:04:51 +0200
+ -- lynx <neolynx@gmail.com>  Wed, 02 Oct 2024 16:01:45 +0200
